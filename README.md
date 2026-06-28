@@ -31,9 +31,9 @@
 | srai  |  101   |
 |  ori  |  110   |
 | andi  |  111   |
-* srli 和 srai 由 imm[11] 区分
-* srli: imm[11] = 0
-* srai: imm[11] = 1
+* srli 和 srai 由 imm[10] 区分
+* srli: imm[10] = 0
+* srai: imm[10] = 1
 #### Load 型指令
 * opcode = 0000011
 
@@ -72,7 +72,7 @@
 |  sh   |  001   |
 |  sw   |  010   |
 ## B 型指令
-* imm[12] + imm[10:5] + Rs1 + Rs2 + funct3 + imm[4:1] + imm[11] + opcode
+* imm[12] + imm[10:5] + Rs2 + Rs1 + funct3 + imm[4:1] + imm[11] + opcode
 * opcode = 1100011
 
 | instr | funct3 |
