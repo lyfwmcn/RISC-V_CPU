@@ -12,15 +12,15 @@ reg [31:0] addr;
 
 assign PC = addr;
 wire [31:0] nextAddr [3:0];
-assign nextAddr[0] = addr + 32'd4;
+assign nextAddr[0] = addr + 32'h4;
 assign nextAddr[1] = addr;
 assign nextAddr[2] = lastPC + imm;
 assign nextAddr[3] = imm;
 assign nextPC = nextAddr[0];
 
 always @(posedge CLK or posedge RST) begin
-    if (RST) begin
-        addr <= 32'd0;
+    if (RST == 1'h1) begin
+        addr <= 32'h0;
     end
     else begin
         addr <= nextAddr[PCCtr];
