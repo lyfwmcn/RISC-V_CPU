@@ -4,9 +4,14 @@ module PC (
     input [1:0] PCCtr,
     input [31:0] lastPC,
     input [31:0] imm,
+    output lastPCError,
+    output immError,
     output [31:0] PC,
     output [31:0] nextPC
 );
+
+assign lastPCError = lastPC[1:0] != 2'h0;
+assign immError = imm[1:0] != 2'h0;
 
 reg [31:0] addr;
 
@@ -23,7 +28,7 @@ always @(posedge CLK or posedge RST) begin
         addr <= 32'h0;
     end
     else begin
-        addr <= nextAddr[PCCtr];
+        addr <= (lastPCError == 1'h1 && PCCtr == 2'h2) || (immError == 1'h1 && (PCCtr == 2'h2 || PCCtr == 2'h3)) ? addr + 32'h4 : nextAddr[PCCtr];
     end
 end
 

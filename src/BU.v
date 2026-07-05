@@ -14,21 +14,21 @@ module BU (
     output Jump
 );
 
-assign BranchCtrError = (BranchCtr == 3'h3);
+assign BranchCtrError = BranchCtr == 3'h3;
 
 wire [1:0] _PCCtrs [7:0];
 
-assign _PCCtrs[0] = (ZF == 1'h1 ? PCCtr : 2'h0);
-assign _PCCtrs[1] = (ZF == 1'h0 ? PCCtr : 2'h0);
+assign _PCCtrs[0] = ZF == 1'h1 ? PCCtr : 2'h0;
+assign _PCCtrs[1] = ZF == 1'h0 ? PCCtr : 2'h0;
 assign _PCCtrs[2] = PCCtr;
-assign _PCCtrs[4] = (SF ^ OF == 1'h1 ? PCCtr : 2'h0);
-assign _PCCtrs[5] = (SF ^ OF == 1'h0 ? PCCtr : 2'h0);
-assign _PCCtrs[6] = (CF == 1'h1 ? PCCtr : 2'h0);
-assign _PCCtrs[7] = (CF == 1'h0 ? PCCtr : 2'h0);
+assign _PCCtrs[4] = SF ^ OF == 1'h1 ? PCCtr : 2'h0;
+assign _PCCtrs[5] = SF ^ OF == 1'h0 ? PCCtr : 2'h0;
+assign _PCCtrs[6] = CF == 1'h1 ? PCCtr : 2'h0;
+assign _PCCtrs[7] = CF == 1'h0 ? PCCtr : 2'h0;
 
 assign _PCCtrs[3] = 2'h0;
 
-assign _PCCtr = (_PCCtrs[BranchCtr] == 2'h0) && (Wait == 1'h1) ? 2'h1 : _PCCtrs[BranchCtr];
+assign _PCCtr = _PCCtrs[BranchCtr] == 2'h0 && Wait == 1'h1 ? 2'h1 : _PCCtrs[BranchCtr];
 
 wire [31:0] _imms [3:0];
 
@@ -38,6 +38,6 @@ assign _imms[2] = imm;
 assign _imms[3] = BusW;
 assign _imm = _imms[_PCCtr];
 
-assign Jump = (_PCCtr == 2'h2) || (_PCCtr == 2'h3);
+assign Jump = _PCCtr == 2'h2 || _PCCtr == 2'h3;
 
 endmodule

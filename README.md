@@ -89,7 +89,7 @@
 # 元件说明
 ## ALU
 * 根据 ALUCtr 选择运算模式输出 BusA 和 BusB 的运算结果和标志信息
-* sll, srl, sra 无视 BusB[31:5]
+* sll, srl, sra 模式 BusB[31:5] 必须为 0
 
 | mode | ALUCtr |
 | :--: | :----: |
@@ -103,3 +103,34 @@
 | sra  |  1101  |
 |  or  |  0110  |
 | and  |  0111  |
+## BU
+* 根据控制信号和标志信息生成 PCCtr, imm, Jump
+* PCCtr 是否改变先经过 BranchCtr 决定，这一中间结果如果为 0，且 Wait 为 1，则 PCCtr 为 1
+
+| BranchCtr | PCCtrNotChanged |
+| :-------: | :-------------: |
+|    000    |       beq       |
+|    001    |       bne       |
+|    010    |        1        |
+|    100    |       blt       |
+|    101    |       bge       |
+|    110    |       bltu      |
+|    111    |       bgeu      |
+
+| PCCtr | newimm | Jump |
+| :---: | :----: | :--: |
+|  00   |   0    |  0   |
+|  01   |   0    |  0   |
+|  10   |  imm   |  1   |
+|  11   |  BusW  |  1   |
+## PC
+* 根据 PCCtr, lastPC, imm 更新 PC，并输出 PC, nextPC
+* 必须保证 lastPC[1:0], imm[1:0] 为 0，否则 PC 不会改变
+
+| PCCtr |    newPC     |
+| :---: | :----------: |
+|  00   |    PC + 4    |
+|  01   |      PC      |
+|  10   | lastPC + imm |
+|  11   |      imm     |
+
