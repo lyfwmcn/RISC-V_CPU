@@ -86,3 +86,20 @@
 ## J 型指令
 * opcode = 1101111
 * imm[20] + imm[10:1] + imm[11] + imm[19:12] + Rd + opcode
+# 元件说明
+## ALU
+* 根据 ALUCtr 选择运算模式输出 BusA 和 BusB 的运算结果和标志信息
+* sll, srl, sra 无视 BusB[31:5]
+
+| mode | ALUCtr |
+| :--: | :----: |
+| add  |  0000  |
+| sub  |  1000  |
+| sll  |  0001  |
+| slt  |  0010  |
+| sltu |  0011  |
+| xor  |  0100  |
+| srl  |  0101  |
+| sra  |  1101  |
+|  or  |  0110  |
+| and  |  0111  |
