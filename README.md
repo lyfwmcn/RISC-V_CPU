@@ -123,6 +123,31 @@
 |  01   |   0    |  0   |
 |  10   |  imm   |  1   |
 |  11   |  BusW  |  1   |
+## IDU
+* 根据 Instr 输出各种控制信号
+* R：检查 funct3, funct7
+* I：检查 slli, srli, srai 的 imm
+* load：检查 funct3
+* env：检查 imm, funct3, Rs1, Rd
+* jalr：检查 funct3
+* lui/auipc：不检查
+* S：检查 funct3
+* B：检查 funct3 和 imm
+* J：检查 imm
+## MM
+* 提供指令数据双读口和单写口，同步读写
+* PCEN 控制 Instr 是否改变，PCCLR 控制 Instr 同步清零
+
+| MemCtr | mode |
+| :----: | :--: |
+|  0000  |  lb  |
+|  0001  |  lh  |
+|  0010  |  lw  |
+|  0100  |  lbu |
+|  0101  |  lhu |
+|  1000  |  sb  |
+|  1001  |  sh  |
+|  1010  |  sw  |
 ## PC
 * 根据 PCCtr, lastPC, imm 更新 PC，并输出 PC, nextPC
 * 必须保证 lastPC[1:0], imm[1:0] 为 0，否则 PC 不会改变
@@ -133,4 +158,6 @@
 |  01   |      PC      |
 |  10   | lastPC + imm |
 |  11   |      imm     |
-
+## RegFile
+* 提供写使能，2 读口，1 写口，同步写，异步读
+* 0 号寄存器固定为 0

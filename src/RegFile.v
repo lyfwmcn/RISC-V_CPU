@@ -12,18 +12,18 @@ module RegFile (
 
 reg [31:0] regs [1:31];
 
-assign BusA = (Rs1 == 5'h0) ? 32'h0 : regs[Rs1];
-assign BusB = (Rs2 == 5'h0) ? 32'h0 : regs[Rs2];
+assign BusA = Rs1 == 5'h0 ? 32'h0 : regs[Rs1];
+assign BusB = Rs2 == 5'h0 ? 32'h0 : regs[Rs2];
 
 integer i;
 
 always @(posedge CLK or posedge RST) begin
-    if (RST) begin
+    if (RST == 1'h1) begin
         for (i = 1; i < 32; i = i + 1) begin
             regs[i] <= 32'h0;
         end
     end
-    else if (RegWr && Rd > 0) begin
+    else if (RegWr == 1'h1 && Rd > 5'h0) begin
         regs[Rd] <= BusW;
     end
 end
