@@ -2,6 +2,8 @@ module IDU (
     input [31:0] Instr,
     output InstrError,
     output RegWr,
+    output BusAused,
+    output BusBused,
     output ALUASrc,
     output ALUBSrc,
     output [1:0] PCCtr,
@@ -55,6 +57,8 @@ assign InstrErrors[15] = 1'h1;
 assign InstrError = InstrErrors[optype];
 
 assign RegWr = optype != 4'h7 && optype != 4'h8 && optype != 4'ha;
+assign BusAused = optype != 4'h0 && optype != 4'h5 && optype != 4'h6 && optype != 4'h9;
+assign BusBused = optype == 4'h1 || optype == 4'h7 || optype == 4'h8;
 assign ALUASrc = optype == 4'h6;
 assign ALUBSrc = optype != 4'h1 && optype != 4'h8;
 assign PCCtr = optype == 4'h4 ? 2'h3 :
