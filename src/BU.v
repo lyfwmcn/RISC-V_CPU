@@ -3,7 +3,6 @@ module BU (
     input CF,
     input SF,
     input OF,
-    input Wait,
     input [1:0] PCCtr,
     input [2:0] BranchCtr,
     input [31:0] imm,
@@ -28,7 +27,7 @@ assign _PCCtrs[7] = CF == 1'h0 ? PCCtr : 2'h0;
 
 assign _PCCtrs[3] = 2'h0;
 
-assign _PCCtr = _PCCtrs[BranchCtr] == 2'h0 && Wait == 1'h1 ? 2'h1 : _PCCtrs[BranchCtr];
+assign _PCCtr = _PCCtrs[BranchCtr];
 
 wire [31:0] _imms [3:0];
 

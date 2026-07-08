@@ -1,6 +1,7 @@
 module PC (
     input CLK,
     input RST,
+    input Wait,
     input [1:0] PCCtr,
     input [31:0] lastPC,
     input [31:0] imm,
@@ -9,6 +10,9 @@ module PC (
     output [31:0] PC,
     output [31:0] nextPC
 );
+
+wire [1:0] _PCCtr;
+assign _PCCtr = Wait == 1'h1 && PCCtr == 2'h0 ? 2'h1 : PCCtr;
 
 assign lastPCError = lastPC[1:0] != 2'h0;
 assign immError = imm[1:0] != 2'h0;
@@ -28,7 +32,7 @@ always @(posedge CLK or posedge RST) begin
         addr <= 32'h0;
     end
     else begin
-        addr <= (lastPCError == 1'h1 && PCCtr == 2'h2) || (immError == 1'h1 && (PCCtr == 2'h2 || PCCtr == 2'h3)) ? addr + 32'h4 : nextAddr[PCCtr];
+        addr <= (lastPCError == 1'h1 && _PCCtr == 2'h2) || (immError == 1'h1 && (_PCCtr == 2'h2 || _PCCtr == 2'h3)) ? addr + 32'h4 : nextAddr[_PCCtr];
     end
 end
 

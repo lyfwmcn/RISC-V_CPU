@@ -105,7 +105,7 @@
 | and  |  0111  |
 ## BU
 * 根据控制信号和标志信息生成 PCCtr, imm, Jump
-* PCCtr 是否改变先经过 BranchCtr 决定，这一中间结果如果为 0，且 Wait 为 1，则 PCCtr 为 1
+* PCCtr 由 BranchCtr 决定
 
 | BranchCtr | PCCtrNotChanged |
 | :-------: | :-------------: |
@@ -149,7 +149,7 @@
 |  1001  |  sh  |
 |  1010  |  sw  |
 ## PC
-* 根据 PCCtr, lastPC, imm 更新 PC，并输出 PC, nextPC
+* 根据 Wait, PCCtr, lastPC, imm 更新 PC，并输出 PC, nextPC
 * 必须保证 lastPC[1:0], imm[1:0] 为 0，否则 PC 不会改变
 
 | PCCtr |    newPC     |
