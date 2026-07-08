@@ -1,3 +1,5 @@
+`include "defines.vh"
+
 module ALU (
     input [3:0] ALUCtr,
     input [31:0] BusA,

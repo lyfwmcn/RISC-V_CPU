@@ -1,3 +1,5 @@
+`include "defines.vh"
+
 module MM (
     input CLK,
     input PCEN,

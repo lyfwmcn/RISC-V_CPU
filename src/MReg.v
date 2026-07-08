@@ -1,3 +1,5 @@
+`include "defines.vh"
+
 module MReg (
     input CLK,
     input RST,

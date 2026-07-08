@@ -1,0 +1,13 @@
++incdir+include
+src/ALU.v
+src/BU.v
+src/CPU.v
+src/EXReg.v
+src/IDReg.v
+src/IDU.v
+src/IFReg.v
+src/MM.v
+src/MReg.v
+src/PC.v
+src/RegFile.v
+tb/tb.v

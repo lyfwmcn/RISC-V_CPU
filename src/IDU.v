@@ -1,3 +1,5 @@
+`include "defines.vh"
+
 module IDU (
     input [31:0] Instr,
     output InstrError,

@@ -1,3 +1,5 @@
+`include "defines.vh"
+
 module PC (
     input CLK,
     input RST,

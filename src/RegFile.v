@@ -1,3 +1,5 @@
+`include "defines.vh"
+
 module RegFile (
     input CLK,
     input RST,

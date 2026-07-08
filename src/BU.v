@@ -1,3 +1,5 @@
+`include "defines.vh"
+
 module BU (
     input ZF,
     input CF,

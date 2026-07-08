@@ -1,3 +1,5 @@
+`include "defines.vh"
+
 module EXReg (
     input CLK,
     input RST,

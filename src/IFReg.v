@@ -1,3 +1,5 @@
+`include "defines.vh"
+
 module IFReg (
     input CLK,
     input RST,
