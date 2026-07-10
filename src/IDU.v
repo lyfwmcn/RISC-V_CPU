@@ -10,11 +10,11 @@ module IDU (
     output ALUBSrc,
     output [1:0] PCCtr,
     output [1:0] RegSrc,
-    output [3:0] ALUCtr,
     output [2:0] BranchCtr,
+    output [3:0] ALUCtr,
     output [3:0] MemCtr,
-    output [4:0] Rs2,
     output [4:0] Rs1,
+    output [4:0] Rs2,
     output [4:0] Rd,
     output [31:0] imm
 );
@@ -70,11 +70,11 @@ assign RegSrc = optype == 4'h5 ? 2'h3 :
                 optype == 4'h3 ? 2'h2 :
                 optype == 4'h4 || optype == 4'h9 ? 2'h1 :
                 2'h0;
+assign BranchCtr = optype == 4'h8 ? funct3 : 3'h2;
 assign ALUCtr = optype == 4'h1 ? {funct7[5], funct3} :
                 optype == 4'h2 ? {funct3 == 3'h5 ? funct7[5] : 1'h0, funct3} :
                 optype == 4'h8 ? 4'h8 :
                 4'h0;
-assign BranchCtr = optype == 4'h8 ? funct3 : 3'h2;
 assign MemCtr = {optype == 4'h7 ? 1'h1 : 1'h0, funct3};
 assign imm = optype == 4'h7 ? {{20{Instr[31]}}, Instr[31:25], Instr[11:7]} :
              optype == 4'h8 ? {{19{Instr[31]}}, Instr[31], Instr[7], Instr[30:25], Instr[11:8], 1'h0} :

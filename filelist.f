@@ -1,6 +1,7 @@
 +incdir+include
 src/ALU.v
 src/BU.v
+src/ByPass.v
 src/CPU.v
 src/EXReg.v
 src/IDReg.v
