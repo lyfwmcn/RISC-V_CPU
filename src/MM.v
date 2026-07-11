@@ -2,6 +2,7 @@
 
 module MM (
     input CLK,
+    input RST,
     input PCEN,
     input PCCLR,
     input [3:0] MemCtr,
@@ -18,6 +19,10 @@ module MM (
 );
 
 reg [7:0] mem [1023:0]; // 地址共1024B
+
+initial begin
+    $readmemh("mem/test.hex", mem, 0, 1023);
+end
 
 assign PCAlignError = PC[1:0] != 2'h0;
 assign AddrAlignError = (MemCtr[1:0] == 2'h1 && Addr[0] != 1'h0) || (MemCtr[1:0] == 2'h2 && Addr[1:0] != 2'h0);
@@ -61,12 +66,18 @@ wire [31:0] ValidPC;
 
 assign ValidPC = {22'h0, PC[9:2], 2'h0};
 
-always @(posedge CLK) begin
-    if (MemCtr[3] == 1'h0) begin
-        DataOut <= AddrAlignError == 1'h1 || AddrOverflowError == 1'h1 || MemCtrError == 1'h1 ? 32'h0 : DataOuts[MemCtr[2:0]];
+always @(posedge CLK or posedge RST) begin
+    if (RST == 1'h1) begin
+        DataOut <= 32'h0;
+        Instr <= 32'h0;
     end
-    if (PCEN == 1'h1) begin
-        Instr <= PCAlignError == 1'h1 || PCOverflowError == 1'h1 || PCCLR == 1'h1 ? 32'h0 : {mem[ValidPC + 32'h3], mem[ValidPC + 32'h2], mem[ValidPC + 32'h1], mem[ValidPC]};
+    else begin
+        if (MemCtr[3] == 1'h0) begin
+            DataOut <= AddrAlignError == 1'h1 || AddrOverflowError == 1'h1 || MemCtrError == 1'h1 ? 32'h0 : DataOuts[MemCtr[2:0]];
+        end
+        if (PCEN == 1'h1) begin
+            Instr <= PCAlignError == 1'h1 || PCOverflowError == 1'h1 || PCCLR == 1'h1 ? 32'h0 : {mem[ValidPC + 32'h3], mem[ValidPC + 32'h2], mem[ValidPC + 32'h1], mem[ValidPC]};
+        end
     end
     if (AddrAlignError == 1'h0 && AddrOverflowError == 1'h0 && MemCtrError == 1'h0 && MemCtr[3] == 1'h1) begin
         case (MemCtr[2:0])

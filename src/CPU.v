@@ -104,7 +104,8 @@ PC PC (
 
 MM MM (
     .CLK(CLK),
-    .PCEN(Wait),
+    .RST(RST),
+    .PCEN(~Wait),
     .PCCLR(Jump),
     .MemCtr(EXMemCtr),
     .DataIn(EXBusB),

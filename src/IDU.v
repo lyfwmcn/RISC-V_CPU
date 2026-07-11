@@ -23,7 +23,12 @@ wire [6:0] opcode;
 wire [2:0] funct3;
 wire [6:0] funct7;
 
-assign {funct7, Rs2, Rs1, funct3, Rd, opcode} = Instr;
+assign funct7 = Instr[31:25];
+assign Rs2 = Instr[24:20];
+assign Rs1 = Instr[19:15];
+assign funct3 = Instr[14:12];
+assign Rd = Instr[11:7];
+assign opcode = Instr[6:0];
 
 wire [3:0] optype;
 
@@ -80,6 +85,7 @@ assign imm = optype == 4'h7 ? {{20{Instr[31]}}, Instr[31:25], Instr[11:7]} :
              optype == 4'h8 ? {{19{Instr[31]}}, Instr[31], Instr[7], Instr[30:25], Instr[11:8], 1'h0} :
              optype == 4'h9 ? {{11{Instr[31]}}, Instr[31], Instr[19:12], Instr[20], Instr[30:21], 1'h0} :
              optype == 4'h5 || optype == 4'h6 ? {Instr[31:12], 12'h0} :
+             optype == 4'h2 && (funct3 == 3'h1 || funct3 == 3'h5) ? {27'h0, Instr[24:20]} :
              (optype >= 4'h2 && optype <= 4'h4) || optype == 4'ha ? {{20{Instr[31]}}, Instr[31:20]} :
              32'h0;
 
