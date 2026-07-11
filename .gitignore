@@ -4,3 +4,4 @@ bin/
 mem/
 tb/
 build.sh
+filelist.f
