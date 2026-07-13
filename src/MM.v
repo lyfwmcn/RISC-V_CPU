@@ -69,14 +69,14 @@ assign ValidPC = {22'h0, PC[9:2], 2'h0};
 always @(posedge CLK or posedge RST) begin
     if (RST == 1'h1) begin
         DataOut <= 32'h0;
-        Instr <= 32'h0;
+        Instr <= 32'h13;
     end
     else begin
         if (MemCtr[3] == 1'h0) begin
             DataOut <= AddrAlignError == 1'h1 || AddrOverflowError == 1'h1 || MemCtrError == 1'h1 ? 32'h0 : DataOuts[MemCtr[2:0]];
         end
         if (PCEN == 1'h1) begin
-            Instr <= PCAlignError == 1'h1 || PCOverflowError == 1'h1 || PCCLR == 1'h1 ? 32'h0 : {mem[ValidPC + 32'h3], mem[ValidPC + 32'h2], mem[ValidPC + 32'h1], mem[ValidPC]};
+            Instr <= PCAlignError == 1'h1 || PCOverflowError == 1'h1 || PCCLR == 1'h1 ? 32'h13 : {mem[ValidPC + 32'h3], mem[ValidPC + 32'h2], mem[ValidPC + 32'h1], mem[ValidPC]};
         end
     end
     if (AddrAlignError == 1'h0 && AddrOverflowError == 1'h0 && MemCtrError == 1'h0 && MemCtr[3] == 1'h1) begin

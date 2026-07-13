@@ -154,18 +154,6 @@ IDU IDU (
     .imm(IDimm)
 );
 
-RegFile RegFile (
-    .CLK(CLK),
-    .RST(RST),
-    .RegWr(WBRegWr),
-    .Rd(WBRd),
-    .Rs1(EXRs1),
-    .Rs2(EXRs2),
-    .BusW(WB_BusW),
-    .BusA(EXBusA),
-    .BusB(EXBusB)
-);
-
 IDReg IDReg (
     .CLK(CLK),
     .RST(RST),
@@ -205,6 +193,18 @@ IDReg IDReg (
     ._nextPC(EXnextPC)
 );
 
+RegFile RegFile (
+    .CLK(CLK),
+    .RST(RST),
+    .RegWr(WBRegWr),
+    .Rd(WBRd),
+    .Rs1(EXRs1),
+    .Rs2(EXRs2),
+    .BusW(WB_BusW),
+    .BusA(EXBusA),
+    .BusB(EXBusB)
+);
+
 ALU ALU (
     .ALUCtr(EXALUCtr),
     .BusA(EX__BusA),
@@ -236,7 +236,7 @@ EXReg EXReg (
     .imm(EXimm),
     .PC(EXPC),
     .nextPC(EXnextPC),
-    .BusB(EXBusB),
+    .BusB(EX_BusB),
     .BusW(EXBusW),
     ._ZF(MZF),
     ._CF(MCF),
