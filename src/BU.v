@@ -10,9 +10,9 @@ module BU (
     input [31:0] imm,
     input [31:0] BusW,
     output BranchCtrError,
+    output Jump,
     output [1:0] _PCCtr,
-    output [31:0] _imm,
-    output Jump
+    output [31:0] _imm
 );
 
 assign BranchCtrError = BranchCtr == 3'h3;

@@ -1,74 +1,63 @@
 `include "defines.vh"
 
 module ByPass (
-    input IDBusAused,
-    input IDBusBused,
-    input EXRegWr,
+    input EXBusAused,
+    input EXBusBused,
     input MRegWr,
     input WBRegWr,
-    input [1:0] EXRegSrc,
     input [1:0] MRegSrc,
-    input [4:0] IDRs1,
-    input [4:0] IDRs2,
-    input [4:0] EXRd,
+    input [4:0] EXRs1,
+    input [4:0] EXRs2,
     input [4:0] MRd,
     input [4:0] WBRd,
-    input [31:0] IDBusA,
-    input [31:0] IDBusB,
-    input [31:0] EXBusW,
+    input [31:0] EXBusA,
+    input [31:0] EXBusB,
     input [31:0] MBusW,
     input [31:0] WB_BusW,
-    input [31:0] EXnextPC,
     input [31:0] MnextPC,
-    input [31:0] EXimm,
     input [31:0] Mimm,
-    input [31:0] Mmem,
     output Wait,
-    output [31:0] ID_BusA,
-    output [31:0] ID_BusB
+    output [31:0] EX_BusA,
+    output [31:0] EX_BusB
 );
 
 wire [2:0] CondA;
-assign CondA = IDBusAused == 1'h0 || IDRs1 == 5'h0 ? 3'h7 :
-               EXRd == IDRs1 && EXRegWr == 1'h1 ? (EXRegSrc == 2'h2 ? 3'h6 : 3'h5) :
-               MRd == IDRs1 && MRegWr == 1'h1 ? 3'h4 :
-               WBRd == IDRs1 && WBRegWr == 1'h1 ? 3'h3 : 3'h2;
+assign CondA = EXBusAused == 1'h0 || EXRs1 == 5'h0 ? 3'h7 :
+               MRd == EXRs1 && MRegWr == 1'h1 ? (MRegSrc == 2'h2 ? 3'h6 : 3'h5) :
+               WBRd == EXRs1 && WBRegWr == 1'h1 ? 3'h4 : 3'h3;
 
 wire [2:0] CondB;
-assign CondB = IDBusBused == 1'h0 || IDRs2 == 5'h0 ? 3'h7 :
-               EXRd == IDRs2 && EXRegWr == 1'h1 ? (EXRegSrc == 2'h2 ? 3'h6 : 3'h5) :
-               MRd == IDRs2 && MRegWr == 1'h1 ? 3'h4 :
-               WBRd == IDRs2 && WBRegWr == 1'h1 ? 3'h3 : 3'h2;
+assign CondB = EXBusBused == 1'h0 || EXRs2 == 5'h0 ? 3'h7 :
+               MRd == EXRs2 && MRegWr == 1'h1 ? (MRegSrc == 2'h2 ? 3'h6 : 3'h5) :
+               WBRd == EXRs2 && WBRegWr == 1'h1 ? 3'h4 : 3'h3;
 
-wire [31:0] ID_BusAs [7:0];
+wire [31:0] EX_BusAs [7:0];
 
-assign ID_BusAs[0] = IDBusA;
-assign ID_BusAs[1] = IDBusA;
-assign ID_BusAs[2] = IDBusA;
-assign ID_BusAs[3] = WB_BusW;
-assign ID_BusAs[4] = MRegSrc == 2'h0 ? MBusW :
+assign EX_BusAs[0] = EXBusA;
+assign EX_BusAs[1] = EXBusA;
+assign EX_BusAs[2] = EXBusA;
+assign EX_BusAs[3] = EXBusA;
+assign EX_BusAs[4] = WB_BusW;
+assign EX_BusAs[5] = MRegSrc == 2'h0 ? MBusW :
                      MRegSrc == 2'h1 ? MnextPC :
-                     MRegSrc == 2'h2 ? Mmem : Mimm;
-assign ID_BusAs[5] = EXRegSrc == 2'h0 ? EXBusW :
-                     EXRegSrc == 2'h1 ? EXnextPC :
-                     EXRegSrc == 2'h2 ? 32'h0 : EXimm;
-assign ID_BusAs[6] = 32'h0;
-assign ID_BusAs[7] = 32'h0;
+                     MRegSrc == 2'h2 ? 32'h0 : Mimm;
+assign EX_BusAs[6] = 32'h0;
+assign EX_BusAs[7] = 32'h0;
 
-assign ID_BusA = ID_BusAs[CondA];
+assign EX_BusA = EX_BusAs[CondA];
 
-wire [31:0] ID_BusBs [7:0];
+wire [31:0] EX_BusBs [7:0];
 
-assign ID_BusBs[0] = IDBusB;
-assign ID_BusBs[1] = IDBusB;
-assign ID_BusBs[2] = IDBusB;
-assign ID_BusBs[3] = ID_BusAs[3];
-assign ID_BusBs[4] = ID_BusAs[4];
-assign ID_BusBs[5] = ID_BusAs[5];
-assign ID_BusBs[6] = 32'h0;
-assign ID_BusBs[7] = 32'h0;
+assign EX_BusBs[0] = EXBusB;
+assign EX_BusBs[1] = EXBusB;
+assign EX_BusBs[2] = EXBusB;
+assign EX_BusBs[3] = EXBusB;
+assign EX_BusBs[4] = EX_BusAs[4];
+assign EX_BusBs[5] = EX_BusAs[5];
+assign EX_BusBs[6] = 32'h0;
+assign EX_BusBs[7] = 32'h0;
 
-assign ID_BusB = ID_BusBs[CondB];
+assign EX_BusB = EX_BusBs[CondB];
 
 assign Wait = CondA == 3'h6 || CondB == 3'h6;
 
