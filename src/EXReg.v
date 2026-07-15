@@ -10,6 +10,7 @@ module EXReg (
     input SF,
     input OF,
     input RegWr,
+    input PredTaken,
     input [1:0] PCCtr,
     input [1:0] RegSrc,
     input [2:0] BranchCtr,
@@ -25,6 +26,7 @@ module EXReg (
     output reg _SF,
     output reg _OF,
     output reg _RegWr,
+    output reg _PredTaken,
     output reg [1:0] _PCCtr,
     output reg [1:0] _RegSrc,
     output reg [2:0] _BranchCtr,
@@ -44,6 +46,7 @@ always @(posedge CLK or posedge RST) begin
         _SF <= 1'h0;
         _OF <= 1'h0;
         _RegWr <= 1'h1;
+        _PredTaken <= 1'h0;
         _PCCtr <= 2'h0;
         _RegSrc <= 2'h0;
         _BranchCtr <= 3'h2;
@@ -61,6 +64,7 @@ always @(posedge CLK or posedge RST) begin
         _SF <= CLR == 1'h1 ? 1'h0 : SF;
         _OF <= CLR == 1'h1 ? 1'h0 : OF;
         _RegWr <= CLR == 1'h1 ? 1'h1 : RegWr;
+        _PredTaken <= CLR == 1'h1 ? 1'h0 : PredTaken;
         _PCCtr <= CLR == 1'h1 ? 2'h0 : PCCtr;
         _RegSrc <= CLR == 1'h1 ? 2'h0 : RegSrc;
         _BranchCtr <= CLR == 1'h1 ? 3'h2 : BranchCtr;

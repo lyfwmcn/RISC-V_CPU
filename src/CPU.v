@@ -11,6 +11,7 @@ wire [31:0] IFnextPC;
 wire IDALUASrc;
 wire IDALUBSrc;
 wire IDRegWr;
+wire IDPredTaken;
 wire IDBusAused;
 wire IDBusBused;
 wire [1:0] IDPCCtr;
@@ -31,6 +32,7 @@ wire EXCF;
 wire EXSF;
 wire EXOF;
 wire EXRegWr;
+wire EXPredTaken;
 wire EXALUASrc;
 wire EXALUBSrc;
 wire EXBusAused;
@@ -62,6 +64,7 @@ wire MCF;
 wire MSF;
 wire MOF;
 wire MRegWr;
+wire MPredTaken;
 wire [1:0] MPCCtr;
 wire [1:0] MRegSrc;
 wire [1:0] M_PCCtr;
@@ -74,6 +77,7 @@ wire [31:0] MPC;
 wire [31:0] MnextPC;
 wire [31:0] MBusB;
 wire [31:0] MBusW;
+wire [31:0] M_PC;
 
 wire WBRegWr;
 wire [1:0] WBRegSrc;
@@ -90,6 +94,11 @@ assign WB_BusW = WBRegSrc == 2'h0 ? WBBusW :
 
 wire Wait;
 wire Jump;
+wire PredJump;
+wire IFRegCLR;
+assign IFRegCLR = Jump | PredJump;
+wire MMPCCLR;
+assign MMPCCLR = Jump | PredJump;
 wire EXRegCLR;
 assign EXRegCLR = Jump | Wait;
 
@@ -98,7 +107,7 @@ PC PC (
     .RST(RST),
     .Wait(Wait),
     .PCCtr(M_PCCtr),
-    .lastPC(MPC),
+    .lastPC(M_PC),
     .imm(M_imm),
     .lastPCError(),
     .immError(),
@@ -110,7 +119,7 @@ MM MM (
     .CLK(CLK),
     .RST(RST),
     .PCEN(~Wait),
-    .PCCLR(Jump),
+    .PCCLR(MMPCCLR),
     .MemCtr(MMemCtr),
     .DataIn(MBusB),
     .PC(IFPC),
@@ -128,7 +137,7 @@ IFReg IFReg (
     .CLK(CLK),
     .RST(RST),
     .EN(~Wait),
-    .CLR(Jump),
+    .CLR(IFRegCLR),
     .PC(IFPC),
     .nextPC(IFnextPC),
     ._PC(IDPC),
@@ -143,6 +152,7 @@ IDU IDU (
     .BusBused(IDBusBused),
     .ALUASrc(IDALUASrc),
     .ALUBSrc(IDALUBSrc),
+    .PredTaken(IDPredTaken),
     .PCCtr(IDPCCtr),
     .RegSrc(IDRegSrc),
     .BranchCtr(IDBranchCtr),
@@ -164,6 +174,7 @@ IDReg IDReg (
     .BusAused(IDBusAused),
     .BusBused(IDBusBused),
     .RegWr(IDRegWr),
+    .PredTaken(IDPredTaken),
     .PCCtr(IDPCCtr),
     .RegSrc(IDRegSrc),
     .BranchCtr(IDBranchCtr),
@@ -180,6 +191,7 @@ IDReg IDReg (
     ._BusAused(EXBusAused),
     ._BusBused(EXBusBused),
     ._RegWr(EXRegWr),
+    ._PredTaken(EXPredTaken),
     ._PCCtr(EXPCCtr),
     ._RegSrc(EXRegSrc),
     ._BranchCtr(EXBranchCtr),
@@ -228,6 +240,7 @@ EXReg EXReg (
     .SF(EXSF),
     .OF(EXOF),
     .RegWr(EXRegWr),
+    .PredTaken(EXPredTaken),
     .PCCtr(EXPCCtr),
     .RegSrc(EXRegSrc),
     .BranchCtr(EXBranchCtr),
@@ -243,6 +256,7 @@ EXReg EXReg (
     ._SF(MSF),
     ._OF(MOF),
     ._RegWr(MRegWr),
+    ._PredTaken(MPredTaken),
     ._PCCtr(MPCCtr),
     ._RegSrc(MRegSrc),
     ._BranchCtr(MBranchCtr),
@@ -260,14 +274,21 @@ BU BU (
     .CF(MCF),
     .SF(MSF),
     .OF(MOF),
+    .MPredTaken(MPredTaken),
+    .IDPredTaken(IDPredTaken),
     .PCCtr(MPCCtr),
     .BranchCtr(MBranchCtr),
-    .imm(Mimm),
+    .Mimm(Mimm),
+    .IDimm(IDimm),
     .BusW(MBusW),
+    .MPC(MPC),
+    .IDPC(IDPC),
     .BranchCtrError(),
     .Jump(Jump),
+    .PredJump(PredJump),
     ._PCCtr(M_PCCtr),
-    ._imm(M_imm)
+    ._imm(M_imm),
+    ._PC(M_PC)
 );
 
 MReg MReg (
