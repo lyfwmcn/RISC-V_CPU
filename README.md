@@ -52,9 +52,18 @@
 | jalr  |  000   |
 #### 环境调用指令
 * opcode = 1110011
-* ecall 和 ebreak 靠 imm[0] 区分
-* ecall: imm[0] = 0
-* ebreak: imm[0] = 1
+
+|  instr  |      imm      | Rs1 | funct3 |  Rd  |
+| :-----: | :-----------: | :-: | :----: | :--: |
+|  ecall  | 000000000000  |  0  |  000   |  0   |
+| ebreak  | 000000000001  |  0  |  000   |  0   |
+|  mret   | 001100000010  |  0  |  000   |  0   |
+|  csrrw  |               |     |  001   |      |
+|  csrrs  |               |     |  010   |      |
+|  csrrc  |               |     |  011   |      |
+| csrrwi  |               |     |  101   |      |
+| csrrsi  |               |     |  110   |      |
+| csrrci  |               |     |  111   |      |
 ## U 型指令
 * imm[31:12] + Rd + opcode
 
