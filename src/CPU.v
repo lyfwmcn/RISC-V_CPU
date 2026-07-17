@@ -22,10 +22,14 @@ wire [3:0] IDMemCtr;
 wire [4:0] IDRd;
 wire [4:0] IDRs1;
 wire [4:0] IDRs2;
+wire [31:0] ID_BusA;
+wire [31:0] ID_BusB;
 wire [31:0] IDimm;
 wire [31:0] IDPC;
 wire [31:0] IDnextPC;
 wire [31:0] IDInstr;
+wire [31:0] IDBusA;
+wire [31:0] IDBusB;
 
 wire EXZF;
 wire EXCF;
@@ -35,16 +39,12 @@ wire EXRegWr;
 wire EXPredTaken;
 wire EXALUASrc;
 wire EXALUBSrc;
-wire EXBusAused;
-wire EXBusBused;
 wire [1:0] EXPCCtr;
 wire [1:0] EXRegSrc;
 wire [2:0] EXBranchCtr;
 wire [3:0] EXALUCtr;
 wire [3:0] EXMemCtr;
 wire [4:0] EXRd;
-wire [4:0] EXRs1;
-wire [4:0] EXRs2;
 wire [31:0] EXimm;
 wire [31:0] EXPC;
 wire [31:0] EXnextPC;
@@ -53,11 +53,9 @@ wire [31:0] EXBusA;
 wire [31:0] EXBusB;
 wire [31:0] EX_BusA;
 wire [31:0] EX_BusB;
-wire [31:0] EX__BusA;
-wire [31:0] EX__BusB;
 
-assign EX__BusA = EXALUASrc == 1'h0 ? EX_BusA : EXPC;
-assign EX__BusB = EXALUBSrc == 1'h0 ? EX_BusB : EXimm;
+assign EX_BusA = EXALUASrc == 1'h0 ? EXBusA : EXPC;
+assign EX_BusB = EXALUBSrc == 1'h0 ? EXBusB : EXimm;
 
 wire MZF;
 wire MCF;
@@ -97,10 +95,10 @@ wire Jump;
 wire PredJump;
 wire IFRegCLR;
 assign IFRegCLR = Jump | PredJump;
+wire IDRegCLR;
+assign IDRegCLR = Jump | Wait;
 wire MMPCCLR;
 assign MMPCCLR = Jump | PredJump;
-wire EXRegCLR;
-assign EXRegCLR = Jump | Wait;
 
 PC PC (
     .CLK(CLK),
@@ -167,12 +165,10 @@ IDU IDU (
 IDReg IDReg (
     .CLK(CLK),
     .RST(RST),
-    .EN(~Wait),
-    .CLR(Jump),
+    .EN(1'h1),
+    .CLR(IDRegCLR),
     .ALUASrc(IDALUASrc),
     .ALUBSrc(IDALUBSrc),
-    .BusAused(IDBusAused),
-    .BusBused(IDBusBused),
     .RegWr(IDRegWr),
     .PredTaken(IDPredTaken),
     .PCCtr(IDPCCtr),
@@ -181,15 +177,13 @@ IDReg IDReg (
     .ALUCtr(IDALUCtr),
     .MemCtr(IDMemCtr),
     .Rd(IDRd),
-    .Rs1(IDRs1),
-    .Rs2(IDRs2),
+    .BusA(ID_BusA),
+    .BusB(ID_BusB),
     .imm(IDimm),
     .PC(IDPC),
     .nextPC(IDnextPC),
     ._ALUASrc(EXALUASrc),
     ._ALUBSrc(EXALUBSrc),
-    ._BusAused(EXBusAused),
-    ._BusBused(EXBusBused),
     ._RegWr(EXRegWr),
     ._PredTaken(EXPredTaken),
     ._PCCtr(EXPCCtr),
@@ -198,8 +192,8 @@ IDReg IDReg (
     ._ALUCtr(EXALUCtr),
     ._MemCtr(EXMemCtr),
     ._Rd(EXRd),
-    ._Rs1(EXRs1),
-    ._Rs2(EXRs2),
+    ._BusA(EXBusA),
+    ._BusB(EXBusB),
     ._imm(EXimm),
     ._PC(EXPC),
     ._nextPC(EXnextPC)
@@ -210,17 +204,17 @@ RegFile RegFile (
     .RST(RST),
     .RegWr(WBRegWr),
     .Rd(WBRd),
-    .Rs1(EXRs1),
-    .Rs2(EXRs2),
+    .Rs1(IDRs1),
+    .Rs2(IDRs2),
     .BusW(WB_BusW),
-    .BusA(EXBusA),
-    .BusB(EXBusB)
+    .BusA(IDBusA),
+    .BusB(IDBusB)
 );
 
 ALU ALU (
     .ALUCtr(EXALUCtr),
-    .BusA(EX__BusA),
-    .BusB(EX__BusB),
+    .BusA(EX_BusA),
+    .BusB(EX_BusB),
     .ALUCtrError(),
     .OperError(),
     .ZF(EXZF),
@@ -234,7 +228,7 @@ EXReg EXReg (
     .CLK(CLK),
     .RST(RST),
     .EN(1'h1),
-    .CLR(EXRegCLR),
+    .CLR(Jump),
     .ZF(EXZF),
     .CF(EXCF),
     .SF(EXSF),
@@ -249,7 +243,7 @@ EXReg EXReg (
     .imm(EXimm),
     .PC(EXPC),
     .nextPC(EXnextPC),
-    .BusB(EX_BusB),
+    .BusB(EXBusB),
     .BusW(EXBusW),
     ._ZF(MZF),
     ._CF(MCF),
@@ -311,24 +305,30 @@ MReg MReg (
 );
 
 ByPass ByPass (
-    .EXBusAused(EXBusAused),
-    .EXBusBused(EXBusBused),
+    .IDBusAused(IDBusAused),
+    .IDBusBused(IDBusBused),
+    .EXRegWr(EXRegWr),
     .MRegWr(MRegWr),
     .WBRegWr(WBRegWr),
+    .EXRegSrc(EXRegSrc),
     .MRegSrc(MRegSrc),
-    .EXRs1(EXRs1),
-    .EXRs2(EXRs2),
+    .IDRs1(IDRs1),
+    .IDRs2(IDRs2),
+    .EXRd(EXRd),
     .MRd(MRd),
     .WBRd(WBRd),
-    .EXBusA(EXBusA),
-    .EXBusB(EXBusB),
+    .IDBusA(IDBusA),
+    .IDBusB(IDBusB),
+    .EXBusW(EXBusW),
     .MBusW(MBusW),
     .WB_BusW(WB_BusW),
+    .EXnextPC(EXnextPC),
+    .EXimm(EXimm),
     .MnextPC(MnextPC),
     .Mimm(Mimm),
     .Wait(Wait),
-    .EX_BusA(EX_BusA),
-    .EX_BusB(EX_BusB)
+    .ID_BusA(ID_BusA),
+    .ID_BusB(ID_BusB)
 );
 
 endmodule
