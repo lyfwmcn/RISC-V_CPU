@@ -44,7 +44,7 @@
 |  lw   |  010   |
 |  lbu  |  100   |
 |  lhu  |  101   |
-#### 跳转指令
+#### jalr 指令
 * opcode = 1100111
 
 | instr | funct3 |
@@ -95,78 +95,55 @@
 ## J 型指令
 * opcode = 1101111
 * imm[20] + imm[10:1] + imm[11] + imm[19:12] + Rd + opcode
-# 元件说明
-## ALU
-* 根据 ALUCtr 选择运算模式输出 BusA 和 BusB 的运算结果和标志信息
-* sll, srl, sra 模式 BusB[31:5] 必须为 0
-
-| mode | ALUCtr |
-| :--: | :----: |
-| add  |  0000  |
-| sub  |  1000  |
-| sll  |  0001  |
-| slt  |  0010  |
-| sltu |  0011  |
-| xor  |  0100  |
-| srl  |  0101  |
-| sra  |  1101  |
-|  or  |  0110  |
-| and  |  0111  |
-## BU
-* 根据控制信号和标志信息生成 PCCtr, imm, Jump
-* PCCtr 由 BranchCtr 决定
-
-| BranchCtr | PCCtrNotChanged |
-| :-------: | :-------------: |
-|    000    |       beq       |
-|    001    |       bne       |
-|    010    |        1        |
-|    100    |       blt       |
-|    101    |       bge       |
-|    110    |       bltu      |
-|    111    |       bgeu      |
-
-| PCCtr | newimm | Jump |
-| :---: | :----: | :--: |
-|  00   |   0    |  0   |
-|  01   |   0    |  0   |
-|  10   |  imm   |  1   |
-|  11   |  BusW  |  1   |
-## IDU
-* 根据 Instr 输出各种控制信号
-* R：检查 funct3, funct7
-* I：检查 slli, srli, srai 的 imm
-* load：检查 funct3
-* env：检查 imm, funct3, Rs1, Rd
-* jalr：检查 funct3
-* lui/auipc：不检查
-* S：检查 funct3
-* B：检查 funct3 和 imm
-* J：检查 imm
-## MM
-* 提供指令数据双读口和单写口，同步读写
-* PCEN 控制 Instr 是否改变，PCCLR 控制 Instr 同步清零
-
-| MemCtr | mode |
-| :----: | :--: |
-|  0000  |  lb  |
-|  0001  |  lh  |
-|  0010  |  lw  |
-|  0100  |  lbu |
-|  0101  |  lhu |
-|  1000  |  sb  |
-|  1001  |  sh  |
-|  1010  |  sw  |
-## PC
-* 根据 Wait, PCCtr, lastPC, imm 更新 PC，并输出 PC, nextPC
-* 必须保证 lastPC[1:0], imm[1:0] 为 0，否则 PC 不会改变
-
-| PCCtr |    newPC     |
-| :---: | :----------: |
-|  00   |    PC + 4    |
-|  01   |      PC      |
-|  10   | lastPC + imm |
-|  11   |      imm     |
-## RegFile
-* 提供写使能，2 读口，1 写口，同步写，异步读
-* 0 号寄存器固定为 0
+# CSR 寄存器
+|    name    | addr |
+| :--------: | :--: |
+|  mstatus   | 300  |
+|    misa    | 301  |
+|  medeleg   | 302  |
+|  mideleg   | 303  |
+|    mie     | 304  |
+|   mtvec    | 305  |
+| mcounteren | 306  |
+|  mscratch  | 340  |
+|    mepc    | 341  |
+|   mcause   | 342  |
+|   mtval    | 343  |
+|    mip     | 344  |
+|   mcycle   | B00  |
+|  minstret  | B02  |
+| mvendorid  | F11  |
+|  marchid   | F12  |
+|   mimpid   | F13  |
+|  mhartid   | F14  |
+* mstatus: 
+# 异常和中断
+## 异常类型
+|  code  |              name              |
+| :----: | :----------------------------: |
+|  0000  | Instruction address misaligned |
+|  0001  | Instruction access fault       |
+|  0010  | Illegal instruction            |
+|  0011  | Breakpoint                     |
+|  0100  | Load address misaligned        |
+|  0101  | Load access fault              |
+|  0110  | Store/AMO address misaligned   |
+|  0111  | Store/AMO access fault         |
+|  1000  | Environment call from U-mode   |
+|  1001  | Environment call from S-mode   |
+|  1011  | Environment call from M-mode   |
+|  1100  | Instruction page fault         |
+|  1101  | Load page fault                |
+|  1111  | Store/AMO page fault           |
+## 中断类型
+|  code  |              name              |
+| :----: | :----------------------------: |
+|  0000  | User software interrupt        |
+|  0001  | Supervisor software interrupt  |
+|  0011  | Machine software interrupt     |
+|  0100  | User timer interrupt           |
+|  0101  | Supervisor timer interrupt     |
+|  0111  | Machine timer interrupt        |
+|  1000  | User external interrupt        |
+|  1001  | Supervisor external interrupt  |
+|  1011  | Machine external interrupt     |

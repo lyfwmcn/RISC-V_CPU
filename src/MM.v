@@ -1,33 +1,45 @@
 `include "defines.vh"
 
+/*
+ * 异常处理：
+ * PC 地址不对齐：可避免错误。发生时指令固定读出 addi x0, 0, 0
+ * PC 越界：不可避免错误。发生时指令固定读出 addi x0, 0, 0
+ * Addr 地址不对齐：不可避免错误。发生时无法写入内存，内存固定读出 0
+ * Addr 越界：不可避免错误。发生时无法写入内存，内存固定读出 0
+ * MemCtr 不在范围内：可避免错误。发生时无法写入内存，内存固定读出 0
+ */
 module MM (
     input CLK,
     input RST,
+    input MMused,
     input PCEN,
     input PCCLR,
     input [3:0] MemCtr,
     input [31:0] DataIn,
     input [31:0] PC,
     input [31:0] Addr,
-    output PCAlignError,
+    output AddrErrorType,
     output AddrAlignError,
     output PCOverflowError,
     output AddrOverflowError,
-    output MemCtrError,
     output reg [31:0] Instr,
     output reg [31:0] DataOut
 );
 
 reg [7:0] mem [1023:0]; // 地址共1024B
 
+// 读取数据并写入
 initial begin
     $readmemh("mem/test.hex", mem, 0, 1023);
 end
 
+assign AddrErrorType = MemCtr[3];
+wire PCAlignError;
 assign PCAlignError = PC[1:0] != 2'h0;
-assign AddrAlignError = (MemCtr[1:0] == 2'h1 && Addr[0] != 1'h0) || (MemCtr[1:0] == 2'h2 && Addr[1:0] != 2'h0);
-assign PCOverflowError = PC[31:10] != 22'h0;
-assign AddrOverflowError = Addr[31:10] != 22'h0;
+assign AddrAlignError = MMused == 1'h1 && (((MemCtr == 4'h1 || MemCtr == 4'h5 || MemCtr == 4'h9) && Addr[0] != 1'h0) || ((MemCtr == 4'h2 || MemCtr == 4'ha) && Addr[1:0] != 2'h0));
+assign PCOverflowError = MMused == 1'h1 && PC[31:10] != 22'h0;
+assign AddrOverflowError = MMused == 1'h1 && Addr[31:10] != 22'h0;
+wire MemCtrError;
 assign MemCtrError = MemCtr[2:0] == 3'h3 || MemCtr[2:0] == 3'h6 || MemCtr[2:0] == 3'h7 || (MemCtr[3] == 1'h1 && (MemCtr[2:0] == 3'h4 || MemCtr[2:0] == 3'h5));
 
 wire [31:0] ValidAddr;
@@ -72,9 +84,7 @@ always @(posedge CLK or posedge RST) begin
         Instr <= 32'h13;
     end
     else begin
-        if (MemCtr[3] == 1'h0) begin
-            DataOut <= AddrAlignError == 1'h1 || AddrOverflowError == 1'h1 || MemCtrError == 1'h1 ? 32'h0 : DataOuts[MemCtr[2:0]];
-        end
+        DataOut <= AddrAlignError == 1'h1 || AddrOverflowError == 1'h1 || MemCtrError == 1'h1 || MemCtr[3] == 1'h1 ? 32'h0 : DataOuts[MemCtr[2:0]];
         if (PCEN == 1'h1) begin
             Instr <= PCAlignError == 1'h1 || PCOverflowError == 1'h1 || PCCLR == 1'h1 ? 32'h13 : {mem[ValidPC + 32'h3], mem[ValidPC + 32'h2], mem[ValidPC + 32'h1], mem[ValidPC]};
         end

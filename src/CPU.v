@@ -12,6 +12,8 @@ wire IDALUASrc;
 wire IDALUBSrc;
 wire IDRegWr;
 wire IDPredTaken;
+wire IDMMused;
+wire IDInstrError;
 wire IDBusAused;
 wire IDBusBused;
 wire [1:0] IDPCCtr;
@@ -37,6 +39,8 @@ wire EXSF;
 wire EXOF;
 wire EXRegWr;
 wire EXPredTaken;
+wire EXMMused;
+wire EXInstrError;
 wire EXALUASrc;
 wire EXALUBSrc;
 wire [1:0] EXPCCtr;
@@ -62,7 +66,14 @@ wire MCF;
 wire MSF;
 wire MOF;
 wire MRegWr;
+wire MInstrError;
+wire MPCAlignError;
+wire MAddrErrorType;
+wire MAddrAlignError;
+wire MPCOverflowError;
+wire MAddrOverflowError;
 wire MPredTaken;
+wire MMMused;
 wire [1:0] MPCCtr;
 wire [1:0] MRegSrc;
 wire [1:0] M_PCCtr;
@@ -78,6 +89,12 @@ wire [31:0] MBusW;
 wire [31:0] M_PC;
 
 wire WBRegWr;
+wire WBInstrError;
+wire WBPCAlignError;
+wire WBAddrErrorType;
+wire WBAddrAlignError;
+wire WBPCOverflowError;
+wire WBAddrOverflowError;
 wire [1:0] WBRegSrc;
 wire [4:0] WBRd;
 wire [31:0] WBimm;
@@ -107,8 +124,7 @@ PC PC (
     .PCCtr(M_PCCtr),
     .lastPC(M_PC),
     .imm(M_imm),
-    .lastPCError(),
-    .immError(),
+    .PCAlignError(MPCAlignError),
     .PC(IFPC),
     .nextPC(IFnextPC)
 );
@@ -116,17 +132,17 @@ PC PC (
 MM MM (
     .CLK(CLK),
     .RST(RST),
+    .MMused(MMMused),
     .PCEN(~Wait),
     .PCCLR(MMPCCLR),
     .MemCtr(MMemCtr),
     .DataIn(MBusB),
     .PC(IFPC),
     .Addr(MBusW),
-    .PCAlignError(),
-    .AddrAlignError(),
-    .PCOverflowError(),
-    .AddrOverflowError(),
-    .MemCtrError(),
+    .AddrErrorType(MAddrErrorType),
+    .AddrAlignError(MAddrAlignError),
+    .PCOverflowError(MPCOverflowError),
+    .AddrOverflowError(MAddrOverflowError),
     .Instr(IDInstr),
     .DataOut(WBmem)
 );
@@ -144,13 +160,14 @@ IFReg IFReg (
 
 IDU IDU (
     .Instr(IDInstr),
-    .InstrError(),
+    .InstrError(IDInstrError),
     .RegWr(IDRegWr),
     .BusAused(IDBusAused),
     .BusBused(IDBusBused),
     .ALUASrc(IDALUASrc),
     .ALUBSrc(IDALUBSrc),
     .PredTaken(IDPredTaken),
+    .MMused(IDMMused),
     .PCCtr(IDPCCtr),
     .RegSrc(IDRegSrc),
     .BranchCtr(IDBranchCtr),
@@ -171,6 +188,8 @@ IDReg IDReg (
     .ALUBSrc(IDALUBSrc),
     .RegWr(IDRegWr),
     .PredTaken(IDPredTaken),
+    .MMused(IDMMused),
+    .InstrError(IDInstrError),
     .PCCtr(IDPCCtr),
     .RegSrc(IDRegSrc),
     .BranchCtr(IDBranchCtr),
@@ -186,6 +205,8 @@ IDReg IDReg (
     ._ALUBSrc(EXALUBSrc),
     ._RegWr(EXRegWr),
     ._PredTaken(EXPredTaken),
+    ._MMused(EXMMused),
+    ._InstrError(EXInstrError),
     ._PCCtr(EXPCCtr),
     ._RegSrc(EXRegSrc),
     ._BranchCtr(EXBranchCtr),
@@ -215,8 +236,6 @@ ALU ALU (
     .ALUCtr(EXALUCtr),
     .BusA(EX_BusA),
     .BusB(EX_BusB),
-    .ALUCtrError(),
-    .OperError(),
     .ZF(EXZF),
     .CF(EXCF),
     .SF(EXSF),
@@ -235,6 +254,8 @@ EXReg EXReg (
     .OF(EXOF),
     .RegWr(EXRegWr),
     .PredTaken(EXPredTaken),
+    .MMused(EXMMused),
+    .InstrError(EXInstrError),
     .PCCtr(EXPCCtr),
     .RegSrc(EXRegSrc),
     .BranchCtr(EXBranchCtr),
@@ -251,6 +272,8 @@ EXReg EXReg (
     ._OF(MOF),
     ._RegWr(MRegWr),
     ._PredTaken(MPredTaken),
+    ._MMused(MMMused),
+    ._InstrError(MInstrError),
     ._PCCtr(MPCCtr),
     ._RegSrc(MRegSrc),
     ._BranchCtr(MBranchCtr),
@@ -270,14 +293,14 @@ BU BU (
     .OF(MOF),
     .MPredTaken(MPredTaken),
     .IDPredTaken(IDPredTaken),
-    .PCCtr(MPCCtr),
+    .MPCCtr(MPCCtr),
+    .IDPCCtr(IDPCCtr),
     .BranchCtr(MBranchCtr),
     .Mimm(Mimm),
     .IDimm(IDimm),
     .BusW(MBusW),
     .MPC(MPC),
     .IDPC(IDPC),
-    .BranchCtrError(),
     .Jump(Jump),
     .PredJump(PredJump),
     ._PCCtr(M_PCCtr),
@@ -291,12 +314,24 @@ MReg MReg (
     .EN(1'h1),
     .CLR(1'h0),
     .RegWr(MRegWr),
+    .InstrError(MInstrError),
+    .PCAlignError(MPCAlignError),
+    .AddrErrorType(MAddrErrorType),
+    .AddrAlignError(MAddrAlignError),
+    .PCOverflowError(MPCOverflowError),
+    .AddrOverflowError(MAddrOverflowError),
     .RegSrc(MRegSrc),
     .Rd(MRd),
     .imm(Mimm),
     .nextPC(MnextPC),
     .BusW(MBusW),
     ._RegWr(WBRegWr),
+    ._InstrError(WBInstrError),
+    ._PCAlignError(WBPCAlignError),
+    ._AddrErrorType(WBAddrErrorType),
+    ._AddrAlignError(WBAddrAlignError),
+    ._PCOverflowError(WBPCOverflowError),
+    ._AddrOverflowError(WBAddrOverflowError),
     ._RegSrc(WBRegSrc),
     ._Rd(WBRd),
     ._imm(WBimm),
