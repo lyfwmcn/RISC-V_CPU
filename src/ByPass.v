@@ -6,8 +6,8 @@ module ByPass (
     input EXRegWr,
     input MRegWr,
     input WBRegWr,
-    input [1:0] EXRegSrc,
-    input [1:0] MRegSrc,
+    input [2:0] EXRegSrc,
+    input [2:0] MRegSrc,
     input [4:0] IDRs1,
     input [4:0] IDRs2,
     input [4:0] EXRd,
@@ -22,6 +22,8 @@ module ByPass (
     input [31:0] EXimm,
     input [31:0] MnextPC,
     input [31:0] Mimm,
+    input [31:0] EXCSRout,
+    input [31:0] MCSRout,
     output Wait,
     output [31:0] ID_BusA,
     output [31:0] ID_BusB
@@ -29,14 +31,14 @@ module ByPass (
 
 wire [2:0] CondA;
 assign CondA = IDBusAused == 1'h0 || IDRs1 == 5'h0 ? 3'h7 :
-               EXRd == IDRs1 && EXRegWr == 1'h1 ? (EXRegSrc == 2'h2 ? 3'h6 : 3'h5) :
-               MRd == IDRs1 && MRegWr == 1'h1 ? (MRegSrc == 2'h2 ? 3'h4 : 3'h3) :
+               EXRd == IDRs1 && EXRegWr == 1'h1 ? (EXRegSrc == 3'h2 ? 3'h6 : 3'h5) :
+               MRd == IDRs1 && MRegWr == 1'h1 ? (MRegSrc == 3'h2 ? 3'h4 : 3'h3) :
                WBRd == IDRs1 && WBRegWr == 1'h1 ? 3'h2 : 3'h1;
 
 wire [2:0] CondB;
 assign CondB = IDBusBused == 1'h0 || IDRs2 == 5'h0 ? 3'h7 :
-               EXRd == IDRs2 && EXRegWr == 1'h1 ? (EXRegSrc == 2'h2 ? 3'h6 : 3'h5) :
-               MRd == IDRs2 && MRegWr == 1'h1 ? (MRegSrc == 2'h2 ? 3'h4 : 3'h3) :
+               EXRd == IDRs2 && EXRegWr == 1'h1 ? (EXRegSrc == 3'h2 ? 3'h6 : 3'h5) :
+               MRd == IDRs2 && MRegWr == 1'h1 ? (MRegSrc == 3'h2 ? 3'h4 : 3'h3) :
                WBRd == IDRs2 && WBRegWr == 1'h1 ? 3'h2 : 3'h1;
 
 wire [31:0] ID_BusAs [7:0];
@@ -44,13 +46,19 @@ wire [31:0] ID_BusAs [7:0];
 assign ID_BusAs[0] = IDBusA;
 assign ID_BusAs[1] = IDBusA;
 assign ID_BusAs[2] = WB_BusW;
-assign ID_BusAs[3] = MRegSrc == 2'h0 ? MBusW :
-                     MRegSrc == 2'h1 ? MnextPC :
-                     MRegSrc == 2'h2 ? 32'h0 : Mimm;
+assign ID_BusAs[3] = MRegSrc == 3'h0 ? MBusW :
+                     MRegSrc == 3'h1 ? MnextPC :
+                     MRegSrc == 3'h2 ? 32'h0 :
+                     MRegSrc == 3'h3 ? Mimm :
+                     MRegSrc == 3'h4 ? MCSRout :
+                     32'h0;
 assign ID_BusAs[4] = 32'h0;
-assign ID_BusAs[5] = EXRegSrc == 2'h0 ? EXBusW :
-                     EXRegSrc == 2'h1 ? EXnextPC :
-                     EXRegSrc == 2'h2 ? 32'h0 : EXimm;
+assign ID_BusAs[5] = EXRegSrc == 3'h0 ? EXBusW :
+                     EXRegSrc == 3'h1 ? EXnextPC :
+                     EXRegSrc == 3'h2 ? 32'h0 :
+                     EXRegSrc == 3'h3 ? EXimm :
+                     EXRegSrc == 3'h4 ? EXCSRout :
+                     32'h0;
 assign ID_BusAs[6] = 32'h0;
 assign ID_BusAs[7] = 32'h0;
 

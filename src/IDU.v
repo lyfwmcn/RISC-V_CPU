@@ -8,23 +8,23 @@ module IDU (
     input [31:0] Instr,
     output InstrError,
     output RegWr,
-    // output CSRWr,
+    output CSRWr,
     output BusAused,
     output BusBused,
-    // output CSRused,
-    output ALUASrc,
-    output ALUBSrc,
     output PredTaken,
     output MMused,
+    output [1:0] CSRSrc,
+    output [1:0] ALUASrc,
+    output [1:0] ALUBSrc,
     output [1:0] PCCtr,
-    output [1:0] RegSrc,
+    output [2:0] RegSrc,
     output [2:0] BranchCtr,
-    output [3:0] ALUCtr,
     output [3:0] MemCtr,
     output [4:0] Rs1,
     output [4:0] Rs2,
     output [4:0] Rd,
-    // output [11:0] CSRRd,
+    output [5:0] ALUCtr,
+    output [11:0] CSRRd,
     output [31:0] imm
 );
 
@@ -103,37 +103,49 @@ assign Rs2 = InstrError == 1'h0 ? _Rs2 : 5'h0;
 assign Rd = InstrError == 1'h0 ? _Rd : 5'h0;
 
 assign RegWr = InstrError == 1'h0 && optype != 4'h7 && optype != 4'h8 && optype != 4'hc;
-// assign CSRWr = InstrError == 1'h0 && (optype == 4'ha || optype == 4'hb);
+assign CSRWr = InstrError == 1'h0 && (optype == 4'ha || optype == 4'hb);
 assign BusAused = InstrError == 1'h0 && optype != 4'h5 && optype != 4'h6 && optype != 4'h9 && optype != 4'hb && optype != 4'hc;
 assign BusBused = InstrError == 1'h0 && (optype == 4'h1 || optype == 4'h7 || optype == 4'h8);
-// assign CSRused = InstrError == 1'h0 && (optype == 4'ha || optype == 4'hb);
-assign ALUASrc = InstrError == 1'h0 && optype == 4'h6;
-assign ALUBSrc = InstrError == 1'h0 && optype != 4'h1 && optype != 4'h8;
+assign ALUASrc = InstrError == 1'h1 ? 2'h0 :
+                 optype == 4'h6 ? 2'h1 :
+                 optype == 4'hb ? 2'h2 :
+                 2'h0;
+assign ALUBSrc = InstrError == 1'h1 ? 2'h0 :
+                 optype == 4'h1 || optype == 4'h8 ? 2'h0 :
+                 optype == 4'ha || optype == 4'hb ? (funct3[1:0] == 2'h2 || funct3[1:0] == 2'h3 ? 2'h2 : 2'h0) :
+                 2'h1;
 assign PredTaken = InstrError == 1'h0 && ((optype == 4'h8 && _imm[31] == 1'h1) || optype == 4'h9);
 assign MMused = InstrError == 1'h0 && (optype == 4'h3 || optype == 4'h7);
+assign CSRSrc = InstrError == 1'h1 ? 2'h0 :
+                optype == 4'ha ? (funct3 == 3'h1 ? 2'h1 : 2'h0) :
+                optype == 4'hb ? (funct3 == 3'h5 ? 2'h2 : 2'h0) :
+                2'h0;
 assign PCCtr = InstrError == 1'h1 ? 2'h0 :
                optype == 4'h4 ? 2'h3 :
                optype == 4'h8 || optype == 4'h9 ? 2'h2 :
                2'h0;
-assign RegSrc = InstrError == 1'h1 ? 2'h0 :
-                optype == 4'h5 ? 2'h3 :
-                optype == 4'h3 ? 2'h2 :
-                optype == 4'h4 || optype == 4'h9 ? 2'h1 :
-                2'h0;
+assign RegSrc = InstrError == 1'h1 ? 3'h0 :
+                optype == 4'h5 ? 3'h3 :
+                optype == 4'h3 ? 3'h2 :
+                optype == 4'h4 || optype == 4'h9 ? 3'h1 :
+                optype == 4'ha || optype == 4'hb ? 3'h4 :
+                3'h0;
 assign BranchCtr = InstrError == 1'h1 ? 3'h2 :
                    optype == 4'h8 ? funct3 :
                    3'h2;
-assign ALUCtr = InstrError == 1'h1 ? 4'h0 :
-                optype == 4'h1 ? {funct7[5], funct3} :
-                optype == 4'h2 ? {funct3 == 3'h5 ? funct7[5] : 1'h0, funct3} :
-                optype == 4'h8 ? 4'h8 :
-                4'h0;
 assign MemCtr = InstrError == 1'h1 ? 4'h2 :
                 optype == 4'h7 ? {1'h1, funct3} :
                 optype == 4'h3 ? {1'h0, funct3} :
                 4'h2;
-// assign CSRRd = InstrError == 1'h1 ? 12'h0 :
-//                optype == 4'ha || optype == 4'hb ? Instr[31:20] : 12'h0;
+assign ALUCtr = InstrError == 1'h1 ? 6'h0 :
+                optype == 4'h1 ? {2'h0, funct7[5], funct3} :
+                optype == 4'h2 ? {2'h0, funct3 == 3'h5 ? funct7[5] : 1'h0, funct3} :
+                optype == 4'h8 ? 6'h8 :
+                optype == 4'ha || optype == 4'hb ? (funct3[1:0] == 2'h2 ? 6'h6 : (funct3[1:0] == 2'h3 ? 6'h17 : 6'h0)) :
+                6'h0;
+assign CSRRd = InstrError == 1'h1 ? 12'h0 :
+               optype == 4'ha || optype == 4'hb ? Instr[31:20] :
+               12'h0;
 assign imm = InstrError == 1'h0 ? _imm : 32'h0;
 
 endmodule
