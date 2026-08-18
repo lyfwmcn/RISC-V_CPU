@@ -143,6 +143,16 @@
 |  21   |  TW  | Time Wait                            |         |
 |  22   | TSR  | Trap SRET                            |         |
 |  31   |  SD  | State Dirty                          |    *    |
+* UIE/SIE/MIE：控制对应等级中断是否能被处理
+* UPIE/SPIE/MPIE：保存中断发生前的 XIE
+* SPP/MPP：进入对应权限态之前的权限态
+* MPRV：控制 M 态下 load/store 是否模拟在 MPP 中保存的特权级下进行
+* SUM：控制 S 态下能否访问 U 态内存
+* MXR：控制可执行不可读的页表项是否可读
+* TVM：控制是否禁止 S 态操作 satp，刷新 TLB 缓存
+* TW：控制是否禁止 S 态无休止等待中断
+* TSR：控制是否禁止 S 态返回 U 态
+* FS/XS/SD：记录对应寄存器是否变化
 ## mie/sie
 | bit | name |               function               | sie |
 | :-: | :--: | :----------------------------------: | :-: |
@@ -155,21 +165,29 @@
 |  8  | UEIE | User External Interrupt Enable       |  *  |
 |  9  | SEIE | Supervisor External Interrupt Enable |  *  |
 | 11  | MEIE | Machine External Interrupt Enable    |     |
+* 控制对应中断是否能被处理
 ## mtvec/stvec
-| mtvec[1:0] |            address            |
-| :--------: | :---------------------------: |
-|     00     | mtvec                         |
-|     01     | mtvec + mcause.Async_Code * 4 |
+| mtvec[1:0] |           address            |
+| :--------: | :--------------------------: |
+|     00     | BASE                         |
+|     01     | BASE + mcause.Async_Code * 4 |
+* 控制中断或异常的跳转地址，注意两种模式下异常都是直接跳转到 BASE
 ## mcause/scause
 | bit  |      name      |
 | :--: | :------------: |
 | 30:0 | Exception Code |
 |  31  | Interrupt      |
+* 记录中断或异常的原因
 ## mepc/sepc
+* 中断或异常发生时的 PC
 ## medeleg/mideleg
+* 记录对应中断或异常是否委托给 S 态处理
 ## mip/sip
+* 记录当前哪些中断或异常挂起，sip 无独立寄存器
 ## mtval/stval
+* 中断或异常的附加信息
 ## mscratch/sscratch
+* 对应态中间寄存器
 ## pmpcfg0-pmpcfg3
 * 编址 0x3A0-0x3A3
 * pmpcfg 包含 4 个 8 位的控制块
@@ -210,6 +228,7 @@
 |  31   | MODE |                          |
 | 30:22 | ASID | Address Space Identifier |
 | 21:0  | PPN  | Physical Page Number     |
+* 记录根页表的物理地址
 # 异常和中断
 ## 异常类型
 |  code  |              name              |
@@ -240,3 +259,32 @@
 |  1000  | User external interrupt        |
 |  1001  | Supervisor external interrupt  |
 |  1011  | Machine external interrupt     |
+# 虚拟内存与页表
+* 页表是一种特殊的数据结构，它将物理内存以 4KiB/4MiB 划分为页，并提供了虚拟页到物理页的映射方法，通常由 1024 个 32 位 PTE 组成，占 4KiB，自身刚好占用一个小页
+* PTE 结构：
+
+|  bit  |   name   |
+| :---: | :------: |
+| 31:10 | PPN      |
+|   7   | Dirty    |
+|   6   | Accessed |
+|   5   | Global   |
+|   4   | User     |
+|   3   | Execute  |
+|   2   | Write    |
+|   1   | Read     |
+|   0   | Valid    |
+* 32 位虚拟地址划分：
+
+|  bit  |  name  |
+| :---: | :----: |
+| 31:22 | VPN[1] |
+| 21:12 | VPN[0] |
+| 11:0  | offset |
+## 一级寻址
+* 页表 PTE = satp.PPN << 12 + VPN[1] << 2
+* 物理地址 = 页表 PTE.PPN << 22 + VPN[0] << 12 + offset
+## 二级寻址
+* 二级页表 PTE = satp.PPN << 12 + VPN[1] << 2
+* 页表 PTE = 二级页表 PTE.PPN << 12 + VPN[0] << 2
+* 物理地址 = 页表 PTE.PPN << 12 + offset
