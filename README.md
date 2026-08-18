@@ -104,19 +104,112 @@
 |  mideleg   | 303  |
 |    mie     | 304  |
 |   mtvec    | 305  |
-| mcounteren | 306  |
 |  mscratch  | 340  |
 |    mepc    | 341  |
 |   mcause   | 342  |
 |   mtval    | 343  |
 |    mip     | 344  |
-|   mcycle   | B00  |
-|  minstret  | B02  |
-| mvendorid  | F11  |
-|  marchid   | F12  |
-|   mimpid   | F13  |
 |  mhartid   | F14  |
-* mstatus: 
+|   mcycle   | B00  |
+|  mcycleh   | B80  |
+|  minstret  | B02  |
+| minstreth  | B82  |
+|  sstatus   | 100  |
+|    sie     | 104  |
+|   stvec    | 105  |
+|  sscratch  | 140  |
+|    sepc    | 141  |
+|   scause   | 142  |
+|   stval    | 143  |
+|    sip     | 144  |
+|    satp    | 180  |
+## mstatus/sstatus
+|  bit  | name |              function                | sstatus |
+| :---: | :--: | :----------------------------------: | :-----: |
+|   0   | UIE  | User Interrupt Enable                |    *    |
+|   1   | SIE  | Supervisor Interrupt Enable          |    *    |
+|   3   | MIE  | Machine Interrupt Enable             |         |
+|   4   | UPIE | User Previous Interrupt Enable       |    *    |
+|   5   | SPIE | Supervisor Previous Interrupt Enable |    *    |
+|   7   | MPIE | Machine Previous Interrupt Enable    |         |
+|   8   | SPP  | Supervisor Previous Privilege        |    *    |
+| 12:11 | MPP  | Machine Previous Privilege           |         |
+| 14:13 |  FS  | Floating-Point Status                |    *    |
+| 16:15 |  XS  | Extension Status                     |    *    |
+|  17   | MPRV | Memory Privilege                     |         |
+|  18   | SUM  | Supervisor User Memory Access        |    *    |
+|  19   | MXR  | Make Executable Readable             |    *    |
+|  20   | TVM  | Trap Virtual Memory                  |         |
+|  21   |  TW  | Time Wait                            |         |
+|  22   | TSR  | Trap SRET                            |         |
+|  31   |  SD  | State Dirty                          |    *    |
+## mie/sie
+| bit | name |               function               | sie |
+| :-: | :--: | :----------------------------------: | :-: |
+|  0  | USIE | User Software Interrupt Enable       |  *  |
+|  1  | SSIE | Supervisor Software Interrupt Enable |  *  |
+|  3  | MSIE | Machine Software Interrupt Enable    |     |
+|  4  | UTIE | User Timer Interrupt Enable          |  *  |
+|  5  | STIE | Supervisor Timer Interrupt Enable    |  *  |
+|  7  | MTIE | Machine Timer Interrupt Enable       |     |
+|  8  | UEIE | User External Interrupt Enable       |  *  |
+|  9  | SEIE | Supervisor External Interrupt Enable |  *  |
+| 11  | MEIE | Machine External Interrupt Enable    |     |
+## mtvec/stvec
+| mtvec[1:0] |            address            |
+| :--------: | :---------------------------: |
+|     00     | mtvec                         |
+|     01     | mtvec + mcause.Async_Code * 4 |
+## mcause/scause
+| bit  |      name      |
+| :--: | :------------: |
+| 30:0 | Exception Code |
+|  31  | Interrupt      |
+## mepc/sepc
+## medeleg/mideleg
+## mip/sip
+## mtval/stval
+## mscratch/sscratch
+## pmpcfg0-pmpcfg3
+* 编址 0x3A0-0x3A3
+* pmpcfg 包含 4 个 8 位的控制块
+* 控制块结构：
+
+| bit | name |       function        |
+| :-: | :--: | :-------------------: |
+|  0  |  R   | Read                  |
+|  1  |  W   | Write                 |
+|  2  |  X   | Execute               |
+| 4:3 |  A   | Address Matching Mode |
+|  7  |  L   | Lock                  |
+* Address Matching Mode:
+
+| code | name  |            function            |                                      address                                       |
+| :--: | :---: | :----------------------------: | :--------------------------------------------------------------------------------: |
+|  00  |  OFF  |                                |                                                                                    |
+|  01  |  TOR  | Top of Range                   | pmpaddr[i - 1] << 2 ~ pmpaddr[i] << 2 - 1                                          |
+|  10  |  NA4  | Naturally Aligned 4-Byte       | pmpaddr[i] << 2 ~ pmpaddr[i] << 2 + 3                                              |
+|  11  | NAPOT | Naturally Aligned Power-of-Two | startaddr = pmpaddr[i] 清除尾部连续 1 后左移 2，大小 = 2 ^ (尾部连续 1 的个数 + 3) |
+## pmpaddr0-pmpaddr15
+* 编址 0x3B0-0x3BF
+## misa
+|  bit  |    name    |  function   |
+| :---: | :--------: | :---------: |
+| 31:30 | MXLEN      | Word Length |
+| 25:0  | Extensions |             |
+* MXLEN:
+
+| code | length |
+| :--: | :----: |
+|  01  |   32   |
+|  10  |   64   |
+|  11  |  128   |
+## satp
+|  bit  | name |         function         |
+| :---: | :--: | :----------------------: |
+|  31   | MODE |                          |
+| 30:22 | ASID | Address Space Identifier |
+| 21:0  | PPN  | Physical Page Number     |
 # 异常和中断
 ## 异常类型
 |  code  |              name              |
