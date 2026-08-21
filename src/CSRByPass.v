@@ -1,4 +1,4 @@
-`include "defines.vh"
+`timescale 1ns / 1ns
 
 module CSRByPass (
     input IDCSRWr,
@@ -12,13 +12,13 @@ module CSRByPass (
     input [11:0] MCSRRd,
     input [11:0] WBCSRRd,
     input [31:0] IDCSRout,
-    input [31:0] EXBusW,
-    input [31:0] MBusW,
-    input [31:0] WBCSRin,
     input [31:0] EXBusA,
-    input [31:0] MBusA,
+    input [31:0] EXBusW,
     input [31:0] EXimm,
+    input [31:0] MBusA,
+    input [31:0] MBusW,
     input [31:0] Mimm,
+    input [31:0] WBCSRin,
     output [31:0] ID_CSRout
 );
 

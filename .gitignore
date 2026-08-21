@@ -1,6 +1,5 @@
 .vscode/
 bin/
 mem/
-tb/
 build.sh
 filelist.f

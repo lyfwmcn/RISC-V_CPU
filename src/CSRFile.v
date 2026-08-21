@@ -1,4 +1,4 @@
-`include "defines.vh"
+`timescale 1ns / 1ns
 
 module CSRFile (
     input CLK,
@@ -10,7 +10,7 @@ module CSRFile (
     output [31:0] CSRout
 );
 
-reg [31:0] regs [0:4095];
+reg [31:0] regs [4095:0];
 
 assign CSRout = regs[CSRRs];
 

@@ -1,6 +1,6 @@
-`include "defines.vh"
+`timescale 1ns / 1ns
 
-module ByPass (
+module RegByPass (
     input IDBusAused,
     input IDBusBused,
     input EXRegWr,
@@ -16,14 +16,14 @@ module ByPass (
     input [31:0] IDBusA,
     input [31:0] IDBusB,
     input [31:0] EXBusW,
-    input [31:0] MBusW,
-    input [31:0] WB_BusW,
-    input [31:0] EXnextPC,
-    input [31:0] EXimm,
-    input [31:0] MnextPC,
-    input [31:0] Mimm,
     input [31:0] EXCSRout,
+    input [31:0] EXimm,
+    input [31:0] EXPCPlus4,
     input [31:0] MCSRout,
+    input [31:0] MBusW,
+    input [31:0] Mimm,
+    input [31:0] MPCPlus4,
+    input [31:0] WB_BusW,
     output Wait,
     output [31:0] ID_BusA,
     output [31:0] ID_BusB
@@ -47,14 +47,14 @@ assign ID_BusAs[0] = IDBusA;
 assign ID_BusAs[1] = IDBusA;
 assign ID_BusAs[2] = WB_BusW;
 assign ID_BusAs[3] = MRegSrc == 3'h0 ? MBusW :
-                     MRegSrc == 3'h1 ? MnextPC :
+                     MRegSrc == 3'h1 ? MPCPlus4 :
                      MRegSrc == 3'h2 ? 32'h0 :
                      MRegSrc == 3'h3 ? Mimm :
                      MRegSrc == 3'h4 ? MCSRout :
                      32'h0;
 assign ID_BusAs[4] = 32'h0;
 assign ID_BusAs[5] = EXRegSrc == 3'h0 ? EXBusW :
-                     EXRegSrc == 3'h1 ? EXnextPC :
+                     EXRegSrc == 3'h1 ? EXPCPlus4 :
                      EXRegSrc == 3'h2 ? 32'h0 :
                      EXRegSrc == 3'h3 ? EXimm :
                      EXRegSrc == 3'h4 ? EXCSRout :

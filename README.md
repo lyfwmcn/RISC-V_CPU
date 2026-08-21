@@ -16,7 +16,7 @@
 |  or   |  110   |     0     |
 |  and  |  111   |     0     |
 ## I 型指令
-#### 算术型指令
+### 算术型指令
 * imm[11:0] + Rs1 + funct3 + Rd + opcode
 * opcode = 0010011
 
@@ -34,7 +34,7 @@
 * srli 和 srai 由 imm[10] 区分
 * srli: imm[10] = 0
 * srai: imm[10] = 1
-#### Load 型指令
+### Load 型指令
 * opcode = 0000011
 
 | instr | funct3 |
@@ -44,26 +44,28 @@
 |  lw   |  010   |
 |  lbu  |  100   |
 |  lhu  |  101   |
-#### jalr 指令
+### jalr 指令
 * opcode = 1100111
 
 | instr | funct3 |
 | :---: | :----: |
 | jalr  |  000   |
-#### 环境调用指令
+### SYSTEM 指令
 * opcode = 1110011
 
-|  instr  |      imm      | Rs1 | funct3 |  Rd  |
-| :-----: | :-----------: | :-: | :----: | :--: |
-|  ecall  | 000000000000  |  0  |  000   |  0   |
-| ebreak  | 000000000001  |  0  |  000   |  0   |
-|  mret   | 001100000010  |  0  |  000   |  0   |
-|  csrrw  |               |     |  001   |      |
-|  csrrs  |               |     |  010   |      |
-|  csrrc  |               |     |  011   |      |
-| csrrwi  |               |     |  101   |      |
-| csrrsi  |               |     |  110   |      |
-| csrrci  |               |     |  111   |      |
+|   instr    |      imm      | Rs1 | funct3 |  Rd  |
+| :--------: | :-----------: | :-: | :----: | :--: |
+|   ecall    | 000000000000  |  0  |  000   |  0   |
+|   ebreak   | 000000000001  |  0  |  000   |  0   |
+|    mret    | 001100000010  |  0  |  000   |  0   |
+|    sret    | 000100000010  |  0  |  000   |  0   |
+|    wfi     | 000100000101  |  0  |  000   |  0   |
+|   csrrw    |               |     |  001   |      |
+|   csrrs    |               |     |  010   |      |
+|   csrrc    |               |     |  011   |      |
+|   csrrwi   |               |     |  101   |      |
+|   csrrsi   |               |     |  110   |      |
+|   csrrci   |               |     |  111   |      |
 ## U 型指令
 * imm[31:12] + Rd + opcode
 
@@ -183,7 +185,7 @@
 ## medeleg/mideleg
 * 记录对应中断或异常是否委托给 S 态处理
 ## mip/sip
-* 记录当前哪些中断或异常挂起，sip 无独立寄存器
+* 记录当前哪些中断挂起，sip 无独立寄存器
 ## mtval/stval
 * 中断或异常的附加信息
 ## mscratch/sscratch
@@ -230,7 +232,9 @@
 | 21:0  | PPN  | Physical Page Number     |
 * 记录根页表的物理地址
 # 异常和中断
-## 异常类型
+## 异常
+* 异常类型：
+
 |  code  |              name              |
 | :----: | :----------------------------: |
 |  0000  | Instruction address misaligned |
@@ -247,7 +251,10 @@
 |  1100  | Instruction page fault         |
 |  1101  | Load page fault                |
 |  1111  | Store/AMO page fault           |
-## 中断类型
+* 异常优先级：
+## 中断
+* 中断类型：
+
 |  code  |              name              |
 | :----: | :----------------------------: |
 |  0000  | User software interrupt        |
@@ -259,6 +266,7 @@
 |  1000  | User external interrupt        |
 |  1001  | Supervisor external interrupt  |
 |  1011  | Machine external interrupt     |
+* 中断优先级：M > S > U，外部中断 > 定时器中断 > 软件中断
 # 虚拟内存与页表
 * 页表是一种特殊的数据结构，它将物理内存以 4KiB/4MiB 划分为页，并提供了虚拟页到物理页的映射方法，通常由 1024 个 32 位 PTE 组成，占 4KiB，自身刚好占用一个小页
 * PTE 结构：
@@ -288,3 +296,4 @@
 * 二级页表 PTE = satp.PPN << 12 + VPN[1] << 2
 * 页表 PTE = 二级页表 PTE.PPN << 12 + VPN[0] << 2
 * 物理地址 = 页表 PTE.PPN << 12 + offset
+# Hart 运行

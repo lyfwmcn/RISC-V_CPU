@@ -1,4 +1,4 @@
-`include "defines.vh"
+`timescale 1ns / 1ns
 
 module RegFile (
     input CLK,
