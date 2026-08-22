@@ -310,7 +310,7 @@ IDReg IDReg (
     .CSRRd(IDCSRRd),
     .BusA(ID_BusA),
     .BusB(ID_BusB),
-    .CSRout(IDCSRout),
+    .CSRout(ID_CSRout),
     .imm(IDimm),
     .PC(IDPC),
     .PCPlus4(IDPCPlus4),
