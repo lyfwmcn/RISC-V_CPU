@@ -5,6 +5,7 @@ module EXReg (
     input RST,
     input EN,
     input CLR,
+    input IsInstr,
     input Ebreak,
     input Ecall,
     input InstrAccessFault,
@@ -32,6 +33,7 @@ module EXReg (
     input [31:0] imm,
     input [31:0] PC,
     input [31:0] PCPlus4,
+    output reg _IsInstr,
     output reg _Ebreak,
     output reg _Ecall,
     output reg _InstrAccessFault,
@@ -63,6 +65,7 @@ module EXReg (
 
 always @(posedge CLK or posedge RST) begin
     if (RST == 1'h1) begin
+        _IsInstr <= 1'h0;
         _Ebreak <= 1'h0;
         _Ecall <= 1'h0;
         _InstrAccessFault <= 1'h0;
@@ -92,6 +95,7 @@ always @(posedge CLK or posedge RST) begin
         _PCPlus4 <= 32'h4;
     end
     else if (EN == 1'h1) begin
+        _IsInstr <= CLR == 1'h1 ? 1'h0 : IsInstr;
         _Ebreak <= CLR == 1'h1 ? 1'h0 : Ebreak;
         _Ecall <= CLR == 1'h1 ? 1'h0 : Ecall;
         _InstrAccessFault <= CLR == 1'h1 ? 1'h0 : InstrAccessFault;

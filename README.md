@@ -98,33 +98,33 @@
 * opcode = 1101111
 * imm[20] + imm[10:1] + imm[11] + imm[19:12] + Rd + opcode
 # CSR 寄存器
-|    name    | addr |
-| :--------: | :--: |
-|  mstatus   | 300  |
-|    misa    | 301  |
-|  medeleg   | 302  |
-|  mideleg   | 303  |
-|    mie     | 304  |
-|   mtvec    | 305  |
-|  mscratch  | 340  |
-|    mepc    | 341  |
-|   mcause   | 342  |
-|   mtval    | 343  |
-|    mip     | 344  |
-|  mhartid   | F14  |
-|   mcycle   | B00  |
-|  mcycleh   | B80  |
-|  minstret  | B02  |
-| minstreth  | B82  |
-|  sstatus   | 100  |
+|    name    | addr | R/W |
+| :--------: | :--: | :-: |
+|  sstatus   | 100  | RW  |
 |    sie     | 104  |
-|   stvec    | 105  |
-|  sscratch  | 140  |
-|    sepc    | 141  |
-|   scause   | 142  |
+|   stvec    | 105  | RW  |
+|  sscratch  | 140  | RW  |
+|    sepc    | 141  | RW  |
+|   scause   | 142  | RW  |
 |   stval    | 143  |
 |    sip     | 144  |
 |    satp    | 180  |
+|  mstatus   | 300  | RW  |
+|    misa    | 301  |  R  |
+|  medeleg   | 302  |
+|  mideleg   | 303  |
+|    mie     | 304  |
+|   mtvec    | 305  | RW  |
+|  mscratch  | 340  | RW  |
+|    mepc    | 341  | RW  |
+|   mcause   | 342  | RW  |
+|   mtval    | 343  |
+|    mip     | 344  |
+|   mcycle   | B00  |  R  |
+|  minstret  | B02  |  R  |
+|  mcycleh   | B80  |  R  |
+| minstreth  | B82  |  R  |
+|  mhartid   | F14  |  R  |
 ## mstatus/sstatus
 |  bit  | name |              function                | sstatus |
 | :---: | :--: | :----------------------------------: | :-----: |

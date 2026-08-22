@@ -10,6 +10,7 @@ wire IFInstrPageFault;
 wire [31:0] IFPC;
 wire [31:0] IFPCPlus4;
 
+wire IDIsInstr;
 wire IDEbreak;
 wire IDEcall;
 wire IDInstrAccessFault;
@@ -44,6 +45,7 @@ wire [31:0] ID_BusA;
 wire [31:0] ID_BusB;
 wire [31:0] ID_CSRout;
 
+wire EXIsInstr;
 wire EXEbreak;
 wire EXEcall;
 wire EXInstrAccessFault;
@@ -86,6 +88,7 @@ assign EX_BusB = EXALUBSrc == 2'h0 ? EXBusB :
                  EXALUBSrc == 2'h2 ? EXCSRout :
                  32'h0;
 
+wire MIsInstr;
 wire MEbreak;
 wire MEcall;
 wire MInstrAccessFault;
@@ -124,6 +127,7 @@ wire [31:0] MPCPlus4;
 wire [31:0] M_imm;
 wire [31:0] M_PC;
 
+wire WBIsInstr;
 wire WBCSRWr;
 wire WBRegWr;
 wire [1:0] WBCSRSrc;
@@ -153,6 +157,15 @@ assign WBCSRin = WBCSRSrc == 2'h0 ? WBBusW :
 wire Wait;
 wire Jump;
 wire PredJump;
+wire [1:0] Mode;
+
+PrivilegeMode PrivilegeMode (
+    .CLK(CLK),
+    .RST(RST),
+    .ModeChange(),
+    .NextMode(),
+    .Mode(Mode)
+);
 
 MemoryUnit MemoryUnit (
     .CLK(CLK),
@@ -231,6 +244,7 @@ CSRFile CSRFile (
     .CLK(CLK),
     .RST(RST),
     .CSRWr(WBCSRWr),
+    .WBIsInstr(WBIsInstr),
     .CSRRd(WBCSRRd),
     .CSRRs(IDCSRRd),
     .CSRin(WBCSRin),
@@ -278,6 +292,7 @@ IFReg IFReg (
     .InstrPageFault(IFInstrPageFault),
     .PC(IFPC),
     .PCPlus4(IFPCPlus4),
+    ._IsInstr(IDIsInstr),
     ._InstrAccessFault(IDInstrAccessFault),
     ._InstrPageFault(IDInstrPageFault),
     ._PC(IDPC),
@@ -289,6 +304,7 @@ IDReg IDReg (
     .RST(RST),
     .EN(1'h1),
     .CLR(Wait | Jump),
+    .IsInstr(IDIsInstr),
     .Ebreak(IDEbreak),
     .Ecall(IDEcall),
     .InstrAccessFault(IDInstrAccessFault),
@@ -314,6 +330,7 @@ IDReg IDReg (
     .imm(IDimm),
     .PC(IDPC),
     .PCPlus4(IDPCPlus4),
+    ._IsInstr(EXIsInstr),
     ._Ebreak(EXEbreak),
     ._Ecall(EXEcall),
     ._InstrAccessFault(EXInstrAccessFault),
@@ -346,6 +363,7 @@ EXReg EXReg (
     .RST(RST),
     .EN(1'h1),
     .CLR(Jump),
+    .IsInstr(EXIsInstr),
     .Ebreak(EXEbreak),
     .Ecall(EXEcall),
     .InstrAccessFault(EXInstrAccessFault),
@@ -373,6 +391,7 @@ EXReg EXReg (
     .imm(EXimm),
     .PC(EXPC),
     .PCPlus4(EXPCPlus4),
+    ._IsInstr(MIsInstr),
     ._Ebreak(MEbreak),
     ._Ecall(MEcall),
     ._InstrAccessFault(MInstrAccessFault),
@@ -436,6 +455,7 @@ MReg MReg (
     .RST(RST),
     .EN(1'h1),
     .CLR(1'h0),
+    .IsInstr(MIsInstr),
     .CSRWr(MCSRWr),
     .RegWr(MRegWr),
     .CSRSrc(MCSRSrc),
@@ -447,6 +467,7 @@ MReg MReg (
     .CSRout(MCSRout),
     .imm(Mimm),
     .PCPlus4(MPCPlus4),
+    ._IsInstr(WBIsInstr),
     ._CSRWr(WBCSRWr),
     ._RegWr(WBRegWr),
     ._CSRSrc(WBCSRSrc),
